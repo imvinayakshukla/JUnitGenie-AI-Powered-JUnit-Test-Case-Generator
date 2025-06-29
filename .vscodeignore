@@ -1,0 +1,14 @@
+.vscode/**
+.vscode-test/**
+src/**
+test/**
+node_modules/**
+webpack.config.js
+tsconfig.json
+.eslintrc.json
+.gitignore
+*.vsix
+**/*.map
+esbuild.js
+webview.html
+junit-test-generator-0.0.1.vsix

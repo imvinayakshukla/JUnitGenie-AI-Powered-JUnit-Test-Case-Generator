@@ -1,0 +1,119 @@
+{
+  "name": "junit-test-generator",
+  "displayName": "JUnit Test Generator",
+  "description": "An AI-powered extension to generate JUnit test cases for your Java files.",
+  "version": "1.0.0",
+  "publisher": "Vinayak",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imvinayakshukla/JUnitGenie-AI-Powered-JUnit-Test-Case-Generator"
+  },
+  "engines": {
+    "vscode": "^1.87.0"
+  },
+  "categories": [
+    "Testing",
+    "Other"
+  ],
+  "keywords": [
+    "java",
+    "junit",
+    "testing",
+    "ai",
+    "code-generation"
+  ],
+  "activationEvents": [
+    "onLanguage:java"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "junit-test-generator.startChat",
+        "title": "Generate JUnit Tests (AI Chat)",
+        "icon": "$(beaker)"
+      },
+      {
+        "command": "junit-test-generator.refreshApiKey",
+        "title": "Refresh OpenAI API Key"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "resourceLangId == java",
+          "command": "junit-test-generator.startChat",
+          "group": "1_modification@1"
+        }
+      ],
+      "explorer/context": [
+        {
+          "when": "resourceExtname == .java",
+          "command": "junit-test-generator.startChat",
+          "group": "1_modification@1"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "JUnit Test Generator",
+      "properties": {
+        "junit-test-generator.openai.apiKey": {
+          "type": "string",
+          "description": "OpenAI API key for test generation",
+          "scope": "application"
+        },
+        "junit-test-generator.openai.model": {
+          "type": "string",
+          "default": "gpt-4",
+          "enum": ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
+          "description": "OpenAI model to use for test generation"
+        },
+        "junit-test-generator.openai.maxTokens": {
+          "type": "number",
+          "default": 2000,
+          "minimum": 100,
+          "maximum": 4000,
+          "description": "Maximum tokens for OpenAI response"
+        },
+        "junit-test-generator.openai.temperature": {
+          "type": "number",
+          "default": 0.3,
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Temperature for OpenAI response (0 = deterministic, 1 = creative)"
+        },
+        "junit-test-generator.testFramework": {
+          "type": "string",
+          "default": "junit5",
+          "enum": ["junit4", "junit5"],
+          "description": "JUnit version to generate tests for"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "webpack --mode production",
+    "watch": "webpack --mode development --watch",
+    "test": "npm run compile && node ./dist/test/runTest.js",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "openai": "^4.104.0"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.87.0",
+    "@types/node": "^18.x",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.2",
+    "webpack": "^5.88.0",
+    "webpack-cli": "^5.1.0",
+    "ts-loader": "^9.4.0",
+    "@vscode/test-electron": "^2.3.9",
+    "rimraf": "^5.0.0"
+  }
+}
