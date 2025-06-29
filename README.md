@@ -10,6 +10,28 @@ An AI-powered VS Code extension that generates comprehensive JUnit test cases fo
 - 💾 **Save & Open**: Automatically save generated tests and open them in the editor
 - 🛡️ **Error Handling**: Robust error handling with helpful error messages
 
+
+## 🆕 **NEW: Automatic File Content Loading**
+
+The extension now **automatically copies and pastes** the content of Java files when you right-click on them:
+
+### **How it works:**
+1. **Right-click any Java file** in the Explorer or Editor
+2. Select **"Generate JUnit Tests (AI Chat)"**
+3. **File content is automatically loaded** into the input area
+4. **Notification shows** which file was loaded
+5. **Click "Generate Tests"** to create test cases immediately
+
+### **Smart Features:**
+- ✅ **Validates Java syntax** before loading
+- ✅ **Detects test files** and warns if you select a test file instead of source
+- ✅ **Auto-resizes input area** to fit the loaded content
+- ✅ **Shows file name** in the UI for confirmation
+- ✅ **Fallback to active editor** if no file is right-clicked
+
+---
+
+
 ## Prerequisites
 
 *   An OpenAI API key.
@@ -37,3 +59,42 @@ An AI-powered VS Code extension that generates comprehensive JUnit test cases fo
 3.  Configure your OpenAI API key in the settings as described above.
 4.  Press `F5` to open a new Extension Development Host window.
 5.  Open a Java file and right-click to start the chat.
+
+## ✅ Refactored Structure Created
+
+Your JUnit Test Generator extension has been successfully refactored for production with the following structure:
+
+```
+junit-test-generator/
+├── src/                              # TypeScript source files
+│   ├── extension.ts                  # Main extension entry point
+│   ├── providers/
+│   │   └── testGeneratorProvider.ts  # Webview provider
+│   ├── services/
+│   │   └── openaiService.ts          # OpenAI API service
+│   ├── utils/
+│   │   └── javaParser.ts             # Java code parsing utilities
+│   └── types/
+│       └── index.ts                  # TypeScript type definitions
+├── resources/                        # Static resources
+│   ├── webview/
+│   │   ├── index.html               # Webview HTML
+│   │   ├── main.css                 # Webview styles
+│   │   └── main.js                  # Webview JavaScript
+│   └── icons/                       # Extension icons (ready for custom icons)
+├── test/                            # Test files
+│   ├── suite/
+│   │   ├── extension.test.ts        # Unit tests
+│   │   └── index.ts                 # Test suite index
+│   └── runTest.ts                   # Test runner
+├── dist/                            # Compiled output
+│   ├── extension.js                 # Compiled extension (561 KiB)
+│   └── extension.js.map             # Source map
+├── package.json                     # Updated with production settings
+├── tsconfig.json                    # TypeScript configuration
+├── webpack.config.js                # Webpack build configuration
+├── .eslintrc.json                   # ESLint configuration
+├── .vscodeignore                    # Files to exclude from package
+└── README.md                        # Updated documentation
+```
+

@@ -167,4 +167,6 @@ jspm_packages/
 # SvelteKit build / generate output
 .svelte-kit
 
+
+PRODUCTION_REFACTOR_SUMMARY.md
 # End of VS Code Extension .gitignore
