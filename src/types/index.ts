@@ -12,6 +12,18 @@ export interface WebviewMessage {
   tests?: string;
   className?: string;
   message?: string;
+  text?: string;
+  error?: string;
+  conversationHistory?: ChatMessage[];
+}
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: number;
+  type?: 'code' | 'error' | 'text';
+  hasCodeActions?: boolean;
 }
 
 export interface JavaClass {

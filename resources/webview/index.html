@@ -9,19 +9,48 @@
 <body>
     <div class="container">
         <div class="header">
-            <svg class="header-icon" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
-            </svg>
-            <span class="header-title">JUnit Test Generator</span>
+            <div class="header-left">
+                <svg class="header-icon" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                <span class="header-title">JUnit Test Generator</span>
+            </div>
+            <div class="header-right">
+                <button class="header-btn" id="clear-chat" title="Clear conversation">
+                    <svg viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                    </svg>
+                </button>
+                <button class="header-btn" id="settings-btn" title="Settings">
+                    <svg viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                        <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+                    </svg>
+                </button>
+            </div>
         </div>
 
         <div class="chat-container">
             <div class="messages" id="messages">
                 <div class="welcome-message">
-                    <div class="welcome-title">🧪 JUnit Test Generator</div>
-                    <p>Paste your Java code below and I'll generate comprehensive JUnit tests for you.</p>
-                    <div class="keyboard-shortcut">
-                        Press <span class="kbd">Ctrl+Enter</span> to generate tests
+                    <div class="copilot-avatar">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2L13.09 8.26L15 9L13.09 9.74L12 16L10.91 9.74L9 9L10.91 8.26L12 2Z"/>
+                            <path d="M21 9L19.91 10.26L19 11L19.91 11.74L21 13L22.09 11.74L23 11L22.09 10.26L21 9Z"/>
+                            <path d="M3 9L1.91 10.26L1 11L1.91 11.74L3 13L4.09 11.74L5 11L4.09 10.26L3 9Z"/>
+                        </svg>
+                    </div>
+                    <div class="welcome-content">
+                        <div class="welcome-title">🧪 JUnit Test Generator</div>
+                        <p>I'm here to help you generate comprehensive JUnit tests for your Java code. You can:</p>
+                        <ul>
+                            <li>Paste Java code to generate tests</li>
+                            <li>Ask questions about testing best practices</li>
+                            <li>Get help fixing test compilation errors</li>
+                        </ul>
+                        <div class="keyboard-shortcut">
+                            Press <span class="kbd">Ctrl+Enter</span> to send messages
+                        </div>
                     </div>
                 </div>
             </div>
@@ -29,14 +58,23 @@
             <div class="input-container">
                 <div class="input-wrapper">
                     <textarea 
-                        id="code-input" 
-                        class="code-input" 
-                        placeholder="Paste your Java code here...&#10;&#10;Example:&#10;public class Calculator {&#10;    public int add(int a, int b) {&#10;        return a + b;&#10;    }&#10;}"
-                        rows="4"
+                        id="chat-input" 
+                        class="chat-input" 
+                        placeholder="Type your message here... You can paste Java code, ask for help, or report compilation errors."
+                        rows="3"
                     ></textarea>
-                    <button id="generate-btn" class="generate-btn">
-                        Generate Tests
-                    </button>
+                    <div class="input-actions">
+                        <button id="attach-error-btn" class="attach-btn" title="Attach compilation error" style="display: none;">
+                            <svg viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                            </svg>
+                        </button>
+                        <button id="send-btn" class="send-btn">
+                            <svg viewBox="0 0 16 16" fill="currentColor">
+                                <path d="M15.854.146a.5.5 0 0 1 .11.54L13.026 8l2.938 7.314a.5.5 0 0 1-.538.65l-6.5-.65a.5.5 0 0 1-.444-.525L8.901 8.5H1.5a.5.5 0 0 1-.5-.5V7a.5.5 0 0 1 .5-.5h7.401l-.419-6.289a.5.5 0 0 1 .444-.525l6.5-.65a.5.5 0 0 1 .428.11z"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

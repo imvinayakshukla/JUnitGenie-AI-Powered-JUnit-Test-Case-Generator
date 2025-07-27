@@ -2,8 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { OpenAIService } from '../services/openaiService';
-import { JavaParser } from '../utils/javaParser';
-import { WebviewMessage } from '../types';
+import { WebviewMessage, ChatMessage } from '../types';
 
 export class TestGeneratorProvider {
     private openaiService: OpenAIService;
@@ -273,20 +272,31 @@ export class TestGeneratorProvider {
         panel.webview.onDidReceiveMessage(
             async (message: any) => {
                 switch (message.command) {
+                    case 'chat':
+                        await this.handleChatMessage(panel, message);
+                        break;
                     case 'generate':
                         if (message.text) {
-                            await this.handleGenerateTests(panel, message.text);
+                            await this.handleGenerateTests(panel, message.text, message.conversationHistory);
                         }
                         break;
                     case 'generateTests':
                         if (message.code) {
-                            await this.handleGenerateTests(panel, message.code);
+                            await this.handleGenerateTests(panel, message.code, message.conversationHistory);
                         }
                         break;
                     case 'saveTests':
                         if (message.tests && message.className) {
                             await this.handleSaveTests(message.tests, message.className);
                         }
+                        break;
+                    case 'copyToClipboard':
+                        if (message.text) {
+                            await this.handleCopyToClipboard(message.text);
+                        }
+                        break;
+                    case 'openSettings':
+                        await this.handleOpenSettings();
                         break;
                 }
             },
@@ -295,32 +305,227 @@ export class TestGeneratorProvider {
         );
     }
 
-    private async handleGenerateTests(panel: vscode.WebviewPanel, code: string): Promise<void> {
+    private async handleChatMessage(panel: vscode.WebviewPanel, message: any): Promise<void> {
+        try {
+            const content = message.content;
+            const type = message.type || 'text';
+            const conversationHistory = message.conversationHistory || [];
+
+            // Determine the type of request with priority order
+            const isCodeRequest = this.isCodeGenerationRequest(content);
+            const isErrorFix = type === 'error' || (!isCodeRequest && this.isErrorFixRequest(content));
+
+            let response: string;
+
+            console.log('Request analysis:', { isCodeRequest, isErrorFix, type, contentLength: content.length });
+
+            if (isCodeRequest) {
+                // PRIORITY: Code generation request
+                const javaCode = this.extractJavaCode(content);
+                
+                if (javaCode) {
+                    console.log('Extracted Java code, generating tests...');
+                    response = await this.openaiService.generateTests(javaCode, undefined, conversationHistory);
+                } else {
+                    console.log('No Java code found, treating as general request...');
+                    response = await this.openaiService.generateTests(content, undefined, conversationHistory);
+                }
+            } else if (isErrorFix && conversationHistory.length > 0) {
+                // SECONDARY: Error fix request (only if there's conversation history)
+                console.log('Processing error fix request...');
+                const { originalCode, errorMessage } = this.extractErrorContext(content, conversationHistory);
+                
+                if (originalCode && errorMessage) {
+                    response = await this.openaiService.fixTestsWithError(
+                        originalCode, 
+                        this.extractGeneratedTests(conversationHistory),
+                        errorMessage, 
+                        conversationHistory
+                    );
+                } else {
+                    console.log('Insufficient context for error fix, falling back to general generation...');
+                    response = await this.openaiService.generateTests(content, undefined, conversationHistory);
+                }
+            } else {
+                // DEFAULT: General test generation
+                console.log('Processing as general test generation request...');
+                response = await this.openaiService.generateTests(content, undefined, conversationHistory);
+            }
+            
+            // Validate that the response contains actual test code
+            if (this.isValidJUnitResponse(response)) {
+                panel.webview.postMessage({ 
+                    command: 'response', 
+                    text: response 
+                });
+            } else {
+                // If response doesn't look like test code, send error message
+                panel.webview.postMessage({ 
+                    command: 'error', 
+                    text: 'Failed to generate proper JUnit test code. Please try again with clear Java source code.'
+                });
+            }
+
+        } catch (error) {
+            console.error('Error handling chat message:', error);
+            panel.webview.postMessage({ 
+                command: 'error', 
+                text: error instanceof Error ? error.message : 'Unknown error occurred'
+            });
+        }
+    }
+
+    private isCodeGenerationRequest(content: string): boolean {
+        // Check for explicit test generation requests
+        const testKeywords = ['generate test', 'create test', 'junit test', 'test case', 'unit test', 'write test'];
+        const hasTestKeywords = testKeywords.some(keyword => content.toLowerCase().includes(keyword));
+        
+        // Check if content contains Java code patterns
+        const javaPatterns = [
+            /class\s+\w+/i,           // Java class declaration
+            /public\s+class/i,        // Public class
+            /import\s+java/i,         // Java imports
+            /public\s+void/i,         // Public methods
+            /private\s+\w+/i,         // Private fields
+            /```java/i                // Java code blocks
+        ];
+        
+        const hasJavaCode = javaPatterns.some(pattern => pattern.test(content));
+        
+        // If it has Java code OR explicit test keywords, consider it a code generation request
+        return hasTestKeywords || hasJavaCode;
+    }
+
+    private isErrorFixRequest(content: string): boolean {
+        // Only consider it an error fix request if it explicitly mentions fixing/correcting previous responses
+        const errorKeywords = [
+            'fix this test',
+            'correct the test',
+            'error in the test',
+            'test is failing',
+            'compilation error',
+            'runtime error',
+            'fix the junit',
+            'test has error',
+            'error message:',
+            'exception in test',
+            'broken test'
+        ];
+        
+        const lowerContent = content.toLowerCase();
+        return errorKeywords.some(keyword => lowerContent.includes(keyword));
+    }
+
+    private extractJavaCode(content: string): string | null {
+        // Extract code from markdown code blocks
+        const codeBlockMatch = content.match(/```(?:java)?\s*([\s\S]*?)```/);
+        if (codeBlockMatch) {
+            return codeBlockMatch[1].trim();
+        }
+
+        // Check if the entire content looks like Java code
+        if (content.includes('class ') || content.includes('public ') || content.includes('import ')) {
+            return content.trim();
+        }
+
+        return null;
+    }
+
+    private extractErrorContext(content: string, conversationHistory: ChatMessage[]): { originalCode: string; errorMessage: string } {
+        let originalCode = '';
+        let errorMessage = '';
+
+        // Extract error from current message
+        const errorMatch = content.match(/```\s*([\s\S]*?)```/);
+        if (errorMatch) {
+            errorMessage = errorMatch[1].trim();
+        } else {
+            errorMessage = content;
+        }
+
+        // Find the most recent code generation in conversation history
+        for (let i = conversationHistory.length - 1; i >= 0; i--) {
+            const message = conversationHistory[i];
+            if (message.role === 'user' && message.type === 'text') {
+                const code = this.extractJavaCode(message.content);
+                if (code) {
+                    originalCode = code;
+                    break;
+                }
+            }
+        }
+
+        return { originalCode, errorMessage };
+    }
+
+    private extractGeneratedTests(conversationHistory: ChatMessage[]): string {
+        // Find the most recent assistant message with code
+        for (let i = conversationHistory.length - 1; i >= 0; i--) {
+            const message = conversationHistory[i];
+            if (message.role === 'assistant' && message.type === 'code') {
+                return message.content;
+            }
+        }
+        return '';
+    }
+
+    private isValidJUnitResponse(response: string): boolean {
+        const trimmed = response.trim();
+        
+        // Must start with import, package, or class
+        if (!/^\s*(import|package|class)/i.test(trimmed)) {
+            return false;
+        }
+        
+        // Check for essential JUnit patterns
+        const essentialPatterns = [
+            /import.*junit/i,           // JUnit import
+            /@Test/,                    // Test annotation  
+            /class\s+\w+Test/i,         // Test class
+            /void\s+test\w+/i,          // Test method
+            /assert\w+/i                // Assertions
+        ];
+        
+        const foundPatterns = essentialPatterns.filter(pattern => pattern.test(response)).length;
+        
+        // Check for explanation text that shouldn't be there
+        const explanationPatterns = [
+            /^(Here|This|I|The|Let|Now|You|We)\s/i,
+            /However, I can generate/i,
+            /This is a basic test/i,
+            /More tests can be added/i,
+            /```/,
+            /misunderstanding/i,
+            /provided code is/i,
+            /basic test class/i,
+            /example/i
+        ];
+        
+        const hasExplanation = explanationPatterns.some(pattern => pattern.test(response));
+        
+        return foundPatterns >= 4 && !hasExplanation && response.length > 300;
+    }
+
+    private async handleCopyToClipboard(text: string): Promise<void> {
+        try {
+            await vscode.env.clipboard.writeText(text);
+            vscode.window.showInformationMessage('Code copied to clipboard!');
+        } catch (error) {
+            console.error('Error copying to clipboard:', error);
+            vscode.window.showErrorMessage('Failed to copy to clipboard');
+        }
+    }
+
+    private async handleOpenSettings(): Promise<void> {
+        vscode.commands.executeCommand('workbench.action.openSettings', 'junit-test-generator');
+    }
+
+    private async handleGenerateTests(panel: vscode.WebviewPanel, code: string, conversationHistory?: ChatMessage[]): Promise<void> {
         try {
             panel.webview.postMessage({ command: 'generationStarted' });
             
-            // Validate Java code
-            if (!JavaParser.isValidJavaCode(code)) {
-                throw new Error('Invalid Java code structure. Please check your code syntax.');
-            }
-
-            // Check if it's already a test file
-            if (JavaParser.isTestFile(code)) {
-                const proceed = await vscode.window.showWarningMessage(
-                    'This appears to be a test file. Do you want to generate tests anyway?',
-                    'Yes', 'No'
-                );
-                if (proceed !== 'Yes') {
-                    panel.webview.postMessage({ 
-                        command: 'error', 
-                        message: 'Test generation cancelled.'
-                    });
-                    return;
-                }
-            }
-
-            const className = JavaParser.extractClassName(code);
-            const tests = await this.openaiService.generateTests(code, className || undefined);
+            // Send code directly to AI without validation
+            const tests = await this.openaiService.generateTests(code, undefined, conversationHistory);
             
             panel.webview.postMessage({ 
                 command: 'response', 
@@ -361,8 +566,8 @@ export class TestGeneratorProvider {
             }
         }
         
-        // Only preload if it's valid Java content and not already a test file
-        if (content && !JavaParser.isTestFile(content)) {
+        // Only preload if content exists (removed test file validation)
+        if (content) {
             panel.webview.postMessage({
                 command: 'preloadCode',
                 code: content,
@@ -373,8 +578,6 @@ export class TestGeneratorProvider {
             if (fileName) {
                 vscode.window.showInformationMessage(`Java code from ${fileName} loaded automatically`);
             }
-        } else if (content && JavaParser.isTestFile(content)) {
-            vscode.window.showWarningMessage(`${fileName} appears to be a test file. Please select a source Java file instead.`);
         }
     }
 
