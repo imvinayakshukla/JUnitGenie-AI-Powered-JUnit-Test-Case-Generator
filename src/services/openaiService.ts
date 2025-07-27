@@ -1,9 +1,10 @@
 import { OpenAI } from 'openai';
 import * as vscode from 'vscode';
-import { TestGenerationConfig, ChatMessage } from '../types';
+import { TestGenerationConfig, ChatMessage, AzureOpenAIConfig } from '../types';
 
 export class OpenAIService {
     private openai: OpenAI | null = null;
+    private isAzure: boolean = false;
 
     constructor() {
         this.initializeClient();
@@ -11,20 +12,88 @@ export class OpenAIService {
 
     private initializeClient(): void {
         const config = vscode.workspace.getConfiguration('junit-test-generator');
+        const useAzure = config.get<boolean>('azureOpenai.enabled') || false;
+
+        if (useAzure) {
+            this.initializeAzureClient(config);
+        } else {
+            this.initializeOpenAIClient(config);
+        }
+    }
+
+    private initializeOpenAIClient(config: vscode.WorkspaceConfiguration): void {
         const apiKey = config.get<string>('openai.apiKey');
 
         if (apiKey) {
             this.openai = new OpenAI({ apiKey });
+            this.isAzure = false;
+        }
+    }
+
+    private initializeAzureClient(config: vscode.WorkspaceConfiguration): void {
+        const apiKey = config.get<string>('azureOpenai.apiKey');
+        const endpoint = config.get<string>('azureOpenai.endpoint');
+        const deploymentName = config.get<string>('azureOpenai.deploymentName');
+        const apiVersion = config.get<string>('azureOpenai.apiVersion') || '2024-02-15-preview';
+
+        if (!apiKey || !endpoint || !deploymentName) {
+            vscode.window.showErrorMessage(
+                'Azure OpenAI configuration incomplete. Please set API key, endpoint, and deployment name in settings.'
+            );
+            return;
+        }
+
+        // Normalize endpoint URL
+        let normalizedEndpoint = endpoint.trim();
+        if (!normalizedEndpoint.startsWith('https://')) {
+            normalizedEndpoint = 'https://' + normalizedEndpoint;
+        }
+        if (!normalizedEndpoint.endsWith('/')) {
+            normalizedEndpoint += '/';
+        }
+
+        try {
+            this.openai = new OpenAI({
+                apiKey,
+                baseURL: `${normalizedEndpoint}openai/deployments/${deploymentName}`,
+                defaultQuery: { 'api-version': apiVersion },
+                defaultHeaders: {
+                    'api-key': apiKey,
+                },
+            });
+            this.isAzure = true;
+        } catch (error) {
+            vscode.window.showErrorMessage(
+                `Failed to initialize Azure OpenAI client: ${error instanceof Error ? error.message : 'Unknown error'}`
+            );
+        }
+    }
+
+    private getModelName(): string {
+        const config = vscode.workspace.getConfiguration('junit-test-generator');
+        
+        if (this.isAzure) {
+            // For Azure OpenAI, we actually don't need to specify the model name in the API call
+            // since it's determined by the deployment, but we return the deployment name for logging
+            const deploymentName = config.get<string>('azureOpenai.deploymentName');
+            if (!deploymentName) {
+                throw new Error('Azure OpenAI deployment name not configured');
+            }
+            return deploymentName;
+        } else {
+            // For regular OpenAI, use the model name
+            return config.get<string>('openai.model') || 'gpt-4';
         }
     }
 
     async generateTests(javaCode: string, className?: string, conversationHistory?: ChatMessage[]): Promise<string> {
         if (!this.openai) {
-            throw new Error('OpenAI API key not configured. Please set it in the extension settings.');
+            const providerName = this.isAzure ? 'Azure OpenAI' : 'OpenAI';
+            throw new Error(`${providerName} API key not configured. Please set it in the extension settings.`);
         }
 
         const config = vscode.workspace.getConfiguration('junit-test-generator');
-        const model = config.get<string>('openai.model') || 'gpt-4';
+        const model = this.getModelName();
         const framework = config.get<string>('testFramework') || 'junit5';
         const maxTokens = config.get<number>('openai.maxTokens') || 2000;
         const temperature = config.get<number>('openai.temperature') || 0.3;
@@ -94,7 +163,8 @@ class ClassNameTest {
             }
         } catch (error) {
             if (error instanceof Error) {
-                throw new Error(`OpenAI API error: ${error.message}`);
+                const providerName = this.isAzure ? 'Azure OpenAI' : 'OpenAI';
+                throw new Error(`${providerName} API error: ${error.message}`);
             }
             throw new Error('Unknown error occurred while generating tests');
         }
@@ -102,11 +172,12 @@ class ClassNameTest {
 
     async fixTestsWithError(originalCode: string, generatedTests: string, errorMessage: string, conversationHistory?: ChatMessage[]): Promise<string> {
         if (!this.openai) {
-            throw new Error('OpenAI API key not configured. Please set it in the extension settings.');
+            const providerName = this.isAzure ? 'Azure OpenAI' : 'OpenAI';
+            throw new Error(`${providerName} API key not configured. Please set it in the extension settings.`);
         }
 
         const config = vscode.workspace.getConfiguration('junit-test-generator');
-        const model = config.get<string>('openai.model') || 'gpt-4';
+        const model = this.getModelName();
         const framework = config.get<string>('testFramework') || 'junit5';
         const maxTokens = config.get<number>('openai.maxTokens') || 2000;
         const temperature = config.get<number>('openai.temperature') || 0.3;
@@ -144,7 +215,8 @@ class ClassNameTest {
             return response.choices[0]?.message?.content || 'No response generated';
         } catch (error) {
             if (error instanceof Error) {
-                throw new Error(`OpenAI API error: ${error.message}`);
+                const providerName = this.isAzure ? 'Azure OpenAI' : 'OpenAI';
+                throw new Error(`${providerName} API error: ${error.message}`);
             }
             throw new Error('Unknown error occurred while fixing tests');
         }
@@ -316,5 +388,31 @@ Return the corrected test code starting with imports:`;
 
     public refreshApiKey(): void {
         this.initializeClient();
+    }
+
+    public getServiceStatus(): { isConfigured: boolean; provider: string; model?: string } {
+        const config = vscode.workspace.getConfiguration('junit-test-generator');
+        const useAzure = config.get<boolean>('azureOpenai.enabled') || false;
+
+        if (useAzure) {
+            const apiKey = config.get<string>('azureOpenai.apiKey');
+            const endpoint = config.get<string>('azureOpenai.endpoint');
+            const deploymentName = config.get<string>('azureOpenai.deploymentName');
+            
+            return {
+                isConfigured: !!(apiKey && endpoint && deploymentName && this.openai),
+                provider: 'Azure OpenAI',
+                model: deploymentName
+            };
+        } else {
+            const apiKey = config.get<string>('openai.apiKey');
+            const model = config.get<string>('openai.model') || 'gpt-4';
+            
+            return {
+                isConfigured: !!(apiKey && this.openai),
+                provider: 'OpenAI',
+                model
+            };
+        }
     }
 }

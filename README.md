@@ -11,7 +11,7 @@ An AI-powered VS Code extension that generates comprehensive JUnit test cases fo
 - 🛡️ **Error Handling**: Robust error handling with helpful error messages
 
 
-## 🆕 **NEW: Automatic File Content Loading**
+## 🆕 **NEW: Improved UI and JunitGenie Now Supports Azure Open Ai**
 
 The extension now **automatically copies and pastes** the content of Java files when you right-click on them:
 
@@ -34,17 +34,37 @@ The extension now **automatically copies and pastes** the content of Java files 
 
 ## Prerequisites
 
-*   An OpenAI API key.
+*   An OpenAI API key OR an Azure OpenAI service deployment.
+
+## Configuration
+
+The extension supports both OpenAI and Azure OpenAI services:
+
+### Option 1: OpenAI (Default)
+1. Go to VS Code Settings (File > Preferences > Settings)
+2. Search for "JUnit Test Generator"
+3. Enter your OpenAI API key in the "Openai: Api Key" field
+4. Choose your preferred model (gpt-4, gpt-4-turbo, or gpt-3.5-turbo)
+
+### Option 2: Azure OpenAI
+1. Go to VS Code Settings (File > Preferences > Settings)
+2. Search for "JUnit Test Generator"
+3. Enable "Azure Openai: Enabled"
+4. Configure the following Azure OpenAI settings:
+   - **API Key**: Your Azure OpenAI API key
+   - **Endpoint**: Your Azure OpenAI endpoint URL (e.g., `https://your-resource.openai.azure.com/`)
+   - **Deployment Name**: Your Azure OpenAI deployment name
+   - **API Version**: API version (default: `2024-02-15-preview`)
+
+The extension will automatically detect which service to use based on the "Azure Openai: Enabled" setting.
 
 ## Usage
 
 1.  **Install the Extension:**
     *   Package the extension by running `vsce package` in the terminal.
     *   Install the generated `.vsix` file in VS Code via the Extensions view (`...` > "Install from VSIX...").
-2.  **Configure the API Key:**
-    *   Go to VS Code Settings (File > Preferences > Settings).
-    *   Search for "JUnit Test Generator".
-    *   Enter your OpenAI API key in the "Openai: Api Key" field.
+2.  **Configure the API:**
+    *   Choose between OpenAI or Azure OpenAI (see Configuration section above).
 3.  **Generate Tests:**
     *   Open a Java file in VS Code.
     *   Right-click in the editor and select "Generate JUnit Tests (AI Chat)".
@@ -56,7 +76,7 @@ The extension now **automatically copies and pastes** the content of Java files 
 
 1.  Clone the repository.
 2.  Run `npm install` to install the dependencies && `npm run compile ` && `npm run package `
-3.  Configure your OpenAI API key in the settings as described above.
+3.  Configure your OpenAI or Azure OpenAI API as described in the Configuration section above.
 4.  Press `F5` to open a new Extension Development Host window.
 5.  Open a Java file and right-click to start the chat.
 
@@ -82,11 +102,6 @@ junit-test-generator/
 │   │   ├── main.css                 # Webview styles
 │   │   └── main.js                  # Webview JavaScript
 │   └── icons/                       # Extension icons (ready for custom icons)
-├── test/                            # Test files
-│   ├── suite/
-│   │   ├── extension.test.ts        # Unit tests
-│   │   └── index.ts                 # Test suite index
-│   └── runTest.ts                   # Test runner
 ├── dist/                            # Compiled output
 │   ├── extension.js                 # Compiled extension (561 KiB)
 │   └── extension.js.map             # Source map

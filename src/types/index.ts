@@ -6,6 +6,13 @@ export interface TestGenerationConfig {
   temperature?: number;
 }
 
+export interface AzureOpenAIConfig {
+  apiKey: string;
+  endpoint: string;
+  deploymentName: string;
+  apiVersion?: string;
+}
+
 export interface WebviewMessage {
   command: string;
   code?: string;

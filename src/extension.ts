@@ -16,14 +16,24 @@ export function activate(context: vscode.ExtensionContext) {
     const refreshApiKeyCommand = vscode.commands.registerCommand(
         'junit-test-generator.refreshApiKey',
         () => {
-            vscode.window.showInformationMessage('OpenAI API key refreshed');
+            provider.refreshApiKey();
+            vscode.window.showInformationMessage('AI API key refreshed');
         }
+    );
+
+    // Register command to check service status
+    const checkStatusCommand = vscode.commands.registerCommand(
+        'junit-test-generator.checkStatus',
+        () => provider.checkServiceStatus()
     );
 
     // Add configuration change listener to refresh API key when changed
     const configurationChangeListener = vscode.workspace.onDidChangeConfiguration(event => {
-        if (event.affectsConfiguration('junit-test-generator.openai.apiKey')) {
-            vscode.window.showInformationMessage('OpenAI API key configuration updated');
+        if (event.affectsConfiguration('junit-test-generator.openai.apiKey') ||
+            event.affectsConfiguration('junit-test-generator.azureOpenai.apiKey') ||
+            event.affectsConfiguration('junit-test-generator.azureOpenai.enabled')) {
+            provider.refreshApiKey();
+            vscode.window.showInformationMessage('AI API configuration updated');
         }
     });
 
@@ -31,6 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         generateTestsCommand,
         refreshApiKeyCommand,
+        checkStatusCommand,
         configurationChangeListener
     );
 
@@ -45,7 +56,8 @@ export function activate(context: vscode.ExtensionContext) {
             if (selection === 'Get Started') {
                 vscode.commands.executeCommand('junit-test-generator.startChat');
             } else if (selection === 'Configure API Key') {
-                vscode.commands.executeCommand('workbench.action.openSettings', 'junit-test-generator.openai.apiKey');
+                // Show both OpenAI and Azure OpenAI settings
+                vscode.commands.executeCommand('workbench.action.openSettings', 'junit-test-generator');
             }
         });
         

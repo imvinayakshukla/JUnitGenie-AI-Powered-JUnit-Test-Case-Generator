@@ -618,6 +618,19 @@ export class TestGeneratorProvider {
         }
     }
 
+    public refreshApiKey(): void {
+        this.openaiService.refreshApiKey();
+    }
+
+    public checkServiceStatus(): void {
+        const status = this.openaiService.getServiceStatus();
+        const statusMessage = status.isConfigured 
+            ? `✅ ${status.provider} is configured and ready${status.model ? ` (Model: ${status.model})` : ''}`
+            : `❌ ${status.provider} is not properly configured. Please check your settings.`;
+        
+        vscode.window.showInformationMessage(statusMessage);
+    }
+
     private getNonce(): string {
         let text = '';
         const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';

@@ -35,7 +35,11 @@
       },
       {
         "command": "junit-test-generator.refreshApiKey",
-        "title": "Refresh OpenAI API Key"
+        "title": "Refresh AI API Key"
+      },
+      {
+        "command": "junit-test-generator.checkStatus",
+        "title": "Check AI Service Status"
       }
     ],
     "menus": {
@@ -67,6 +71,31 @@
           "default": "gpt-4",
           "enum": ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
           "description": "OpenAI model to use for test generation"
+        },
+        "junit-test-generator.azureOpenai.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Use Azure OpenAI instead of OpenAI"
+        },
+        "junit-test-generator.azureOpenai.apiKey": {
+          "type": "string",
+          "description": "Azure OpenAI API key",
+          "scope": "application"
+        },
+        "junit-test-generator.azureOpenai.endpoint": {
+          "type": "string",
+          "description": "Azure OpenAI endpoint URL (e.g., https://your-resource.openai.azure.com/)",
+          "scope": "application"
+        },
+        "junit-test-generator.azureOpenai.deploymentName": {
+          "type": "string",
+          "description": "Azure OpenAI deployment name",
+          "scope": "application"
+        },
+        "junit-test-generator.azureOpenai.apiVersion": {
+          "type": "string",
+          "default": "2024-02-15-preview",
+          "description": "Azure OpenAI API version"
         },
         "junit-test-generator.openai.maxTokens": {
           "type": "number",
