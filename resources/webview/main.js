@@ -30,6 +30,12 @@ function setupEventListeners() {
     // Settings button
     settingsBtn.addEventListener('click', handleOpenSettings);
     
+    // Coverage button
+    const coverageBtn = document.getElementById('coverage-btn');
+    if (coverageBtn) {
+        coverageBtn.addEventListener('click', handleCoverageAnalysis);
+    }
+    
     // Attach error button (initially hidden)
     attachErrorBtn.addEventListener('click', handleAttachError);
     
@@ -298,6 +304,12 @@ function handleClearChat() {
 function handleOpenSettings() {
     vscode.postMessage({
         command: 'openSettings'
+    });
+}
+
+function handleCoverageAnalysis() {
+    vscode.postMessage({
+        command: 'runCoverage'
     });
 }
 

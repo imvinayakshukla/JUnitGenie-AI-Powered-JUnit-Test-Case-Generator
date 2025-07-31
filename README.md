@@ -5,10 +5,12 @@ An AI-powered VS Code extension that generates comprehensive JUnit test cases fo
 ## Features
 
 - 🧪 **Smart Test Generation**: Generate comprehensive JUnit 4 and JUnit 5 test cases
+- 📊 **Code Coverage Analysis**: Integrated JaCoCo coverage reporting with visual indicators
 - 🎯 **Context-Aware**: Automatically detects active Java files and loads them for testing
 - 🔧 **Easy Integration**: Right-click context menu integration for Java files
 - 💾 **Save & Open**: Automatically save generated tests and open them in the editor
 - 🛡️ **Error Handling**: Robust error handling with helpful error messages
+- 🏗️ **Multi-Module Support**: Works with complex multi-module Maven and Gradle projects
 
 
 ## 🆕 **NEW: Improved UI and JunitGenie Now Supports Azure Open Ai**
@@ -71,6 +73,26 @@ The extension will automatically detect which service to use based on the "Azure
     *   A new panel will open with the chat interface.
     *   The code from your active editor will be pre-filled.
     *   Click "Generate" to get your JUnit tests.
+
+## 📊 Code Coverage Analysis
+
+The extension includes integrated JaCoCo code coverage analysis:
+
+### **Quick Start:**
+1. **Run Coverage**: Click the coverage button (📊) in the test generator interface
+2. **View Results**: See module-wise coverage breakdown with uncovered lines highlighted
+3. **Improve Tests**: Generate additional tests for uncovered code
+
+### **Features:**
+- ✅ **Visual Indicators**: Uncovered lines highlighted in red directly in your code
+- ✅ **Multi-Module Support**: Automatic detection of Maven/Gradle multi-module projects  
+- ✅ **Interactive Reports**: Detailed coverage statistics in a dedicated panel
+- ✅ **Real-time Updates**: Coverage decorations update as you run tests
+
+### **Supported Build Systems:**
+- **Maven**: Automatically runs `mvn clean test jacoco:report`
+- **Gradle**: Automatically runs `./gradlew clean test jacocoTestReport`
+
 
 ## Development
 

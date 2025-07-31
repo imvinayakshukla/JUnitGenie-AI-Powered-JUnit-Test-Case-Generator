@@ -34,6 +34,11 @@
         "icon": "$(beaker)"
       },
       {
+        "command": "junit-test-generator.runCoverage",
+        "title": "Run Code Coverage Analysis",
+        "icon": "$(graph)"
+      },
+      {
         "command": "junit-test-generator.refreshApiKey",
         "title": "Refresh AI API Key"
       },
@@ -48,6 +53,11 @@
           "when": "resourceLangId == java",
           "command": "junit-test-generator.startChat",
           "group": "1_modification@1"
+        },
+        {
+          "when": "resourceLangId == java",
+          "command": "junit-test-generator.runCoverage",
+          "group": "1_modification@2"
         }
       ],
       "explorer/context": [
@@ -55,6 +65,20 @@
           "when": "resourceExtname == .java",
           "command": "junit-test-generator.startChat",
           "group": "1_modification@1"
+        },
+        {
+          "when": "explorerResourceIsFolder",
+          "command": "junit-test-generator.runCoverage",
+          "group": "1_modification@1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "junit-test-generator.startChat",
+          "when": "resourceLangId == java"
+        },
+        {
+          "command": "junit-test-generator.runCoverage"
         }
       ]
     },
@@ -69,7 +93,11 @@
         "junit-test-generator.openai.model": {
           "type": "string",
           "default": "gpt-4",
-          "enum": ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
+          "enum": [
+            "gpt-4",
+            "gpt-4-turbo",
+            "gpt-3.5-turbo"
+          ],
           "description": "OpenAI model to use for test generation"
         },
         "junit-test-generator.azureOpenai.enabled": {
@@ -114,8 +142,38 @@
         "junit-test-generator.testFramework": {
           "type": "string",
           "default": "junit5",
-          "enum": ["junit4", "junit5"],
+          "enum": [
+            "junit4",
+            "junit5"
+          ],
           "description": "JUnit version to generate tests for"
+        },
+        "junit-test-generator.jacoco.autoHighlight": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically highlight uncovered lines in the editor"
+        },
+        "junit-test-generator.jacoco.excludePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/test/**",
+            "**/tests/**"
+          ],
+          "description": "Patterns to exclude from coverage analysis"
+        },
+        "junit-test-generator.jacoco.reportPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "target/site/jacoco/jacoco.xml",
+            "build/reports/jacoco/test/jacocoTestReport.xml"
+          ],
+          "description": "Custom paths to look for JaCoCo reports"
         }
       }
     }
@@ -130,19 +188,20 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
+    "fast-xml-parser": "^4.5.3",
     "openai": "^4.104.0"
   },
   "devDependencies": {
-    "@types/vscode": "^1.87.0",
     "@types/node": "^18.x",
+    "@types/vscode": "^1.87.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "@vscode/test-electron": "^2.3.9",
     "eslint": "^8.57.0",
+    "rimraf": "^5.0.0",
+    "ts-loader": "^9.4.0",
     "typescript": "^5.4.2",
     "webpack": "^5.88.0",
-    "webpack-cli": "^5.1.0",
-    "ts-loader": "^9.4.0",
-    "@vscode/test-electron": "^2.3.9",
-    "rimraf": "^5.0.0"
+    "webpack-cli": "^5.1.0"
   }
 }

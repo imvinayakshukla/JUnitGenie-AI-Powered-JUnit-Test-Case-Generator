@@ -298,6 +298,9 @@ export class TestGeneratorProvider {
                     case 'openSettings':
                         await this.handleOpenSettings();
                         break;
+                    case 'runCoverage':
+                        await this.handleRunCoverage();
+                        break;
                 }
             },
             undefined,
@@ -615,6 +618,14 @@ export class TestGeneratorProvider {
             vscode.window.showErrorMessage(
                 `Failed to save test file: ${error instanceof Error ? error.message : 'Unknown error'}`
             );
+        }
+    }
+
+    private async handleRunCoverage(): Promise<void> {
+        try {
+            vscode.commands.executeCommand('junit-test-generator.runCoverage');
+        } catch (error) {
+            vscode.window.showErrorMessage('Failed to open coverage analysis: ' + error);
         }
     }
 

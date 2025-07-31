@@ -1,15 +1,23 @@
 import * as vscode from 'vscode';
 import { TestGeneratorProvider } from './providers/testGeneratorProvider';
+import { CoverageProvider } from './providers/coverageProvider';
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('JUnit Test Generator extension is now active');
 
     const provider = new TestGeneratorProvider(context);
+    const coverageProvider = new CoverageProvider(context);
 
     // Register command for generating tests
     const generateTestsCommand = vscode.commands.registerCommand(
         'junit-test-generator.startChat',
         (uri?: vscode.Uri) => provider.showTestGeneratorPanel(uri)
+    );
+
+    // Register command for code coverage analysis
+    const coverageAnalysisCommand = vscode.commands.registerCommand(
+        'junit-test-generator.runCoverage',
+        () => coverageProvider.showCoveragePanel()
     );
 
     // Register command to refresh API key (useful when user changes settings)
@@ -40,6 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Subscribe to disposables
     context.subscriptions.push(
         generateTestsCommand,
+        coverageAnalysisCommand,
         refreshApiKeyCommand,
         checkStatusCommand,
         configurationChangeListener
